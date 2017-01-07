@@ -1,8 +1,7 @@
-package ie.gmit.sw.gui;
+package ie.gmit.sw.client;
 
-import ie.gmit.sw.WebClient;
-import ie.gmit.sw.XMLParser.Context;
-import ie.gmit.sw.XMLParser.ContextParser;
+import ie.gmit.sw.config.Context;
+import ie.gmit.sw.config.ContextParser;
 
 public class ClientRunner {
 	
@@ -14,9 +13,8 @@ public class ClientRunner {
 			cp.init();
 		} catch (Throwable e) {
 			e.printStackTrace();
-		}	
-		
-		WebClient client = new WebClient(ctx);
+		}
+		SocketClient client = new SocketClient(ctx);
 		Thread t = new Thread(client, ctx.getUsername());
 		t.start();
 		

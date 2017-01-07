@@ -1,4 +1,6 @@
-package ie.gmit.sw;
+package ie.gmit.sw.server;
+
+import java.io.BufferedInputStream;
 
 /* This class provides a very simple implementation of a web server. As a web server
  * must be capable of handling multiple requests from web browsers at the same time,
@@ -15,13 +17,23 @@ package ie.gmit.sw;
  * server class below.  
  */
 
-import java.io.*; //Contains classes for all kinds of I/O activity
-import java.net.*; //Contains basic networking classes
+//Contains classes for all kinds of I/O activity
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+//Contains basic networking classes
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
 
 import ie.gmit.sw.file.FolderReader;
+import ie.gmit.sw.logger.Logger;
+import ie.gmit.sw.request.Request;
 
-public class WebServer {
+public class SocketServer {
 	private ServerSocket ss; // A server socket listens on a port number for
 								// incoming requests
 
@@ -29,6 +41,8 @@ public class WebServer {
 	// instead. The range
 	// of port numbers runs up to 2 ^ 16 = 65536 ports.
 	private static final int SERVER_PORT = 7777;
+
+	private Logger logger;
 
 	// The boolean value keepRunning is used to control the while loop in the
 	// inner class called
@@ -38,11 +52,11 @@ public class WebServer {
 	private volatile boolean keepRunning = true;
 
 	// A null constructor for the WebServer class
-	private WebServer() {
+	private SocketServer(int serverPort) {
 		try { // Try the following. If anything goes wrong, the error will be
 				// passed to the catch block
 
-			ss = new ServerSocket(SERVER_PORT); // Start the server socket
+			ss = new ServerSocket(serverPort); // Start the server socket
 												// listening on port 7777
 
 			/*
@@ -61,13 +75,19 @@ public class WebServer {
 																				// also
 																				// name
 																				// threads
+			ArrayBlockingQueue<Request> queue = new ArrayBlockingQueue<Request>(7);
+			this.logger = new Logger(queue);
+
+			Thread loggerThread = new Thread(logger, "Logger");
+
 			server.setPriority(Thread.MAX_PRIORITY); // Ask the Thread Scheduler
 														// to run this thread as
 														// a priority
 			server.start(); // The Hollywood Principle - Don't call us, we'll
 							// call you
+			loggerThread.start();
 
-			System.out.println("Server started and listening on port " + SERVER_PORT);
+			System.out.println("Server started and listening on port " + serverPort);
 
 		} catch (IOException e) { // Something nasty happened. We should handle
 									// error gracefully, i.e. not like this...
@@ -77,9 +97,11 @@ public class WebServer {
 
 	// A main method is required to start a standard Java application
 	public static void main(String[] args) {
-		new WebServer(); // Create an instance of a WebServer. This fires the
-							// constructor of WebServer() above on the main
-							// stack
+		new SocketServer(Integer.parseInt(args[0])); // Create an instance of a
+														// WebServer. This fires
+														// the
+		// constructor of WebServer() above on the main
+		// stack
 	}
 
 	/*
@@ -112,20 +134,20 @@ public class WebServer {
 					 * have many requests hitting the server at the same time),
 					 * so we have to be able to handle them quickly.
 					 */
-					new Thread(new HTTPRequest(s), "T-" + counter).start(); // Give
-																			// the
-																			// new
-																			// job
-																			// to
-																			// the
-																			// new
-																			// worker
-																			// and
-																			// tell
-																			// it
-																			// to
-																			// start
-																			// work
+					new Thread(new ClientThread(s), "T-" + counter).start(); // Give
+																				// the
+																				// new
+																				// job
+																				// to
+																				// the
+																				// new
+																				// worker
+																				// and
+																				// tell
+																				// it
+																				// to
+																				// start
+																				// work
 					counter++; // Increment counter
 				} catch (IOException e) { // Something nasty happened. We should
 											// handle error gracefully, i.e. not
@@ -143,13 +165,13 @@ public class WebServer {
 	 * stream (bytes) and responding by sending information to the socket's
 	 * output stream (more bytes).
 	 */
-	private class HTTPRequest implements Runnable {
+	private class ClientThread implements Runnable {
 		private Socket sock; // A specific socket connection between some
 								// computer on a network and this programme
 		private ObjectInputStream in;
 		private ObjectOutputStream out;
 
-		private HTTPRequest(Socket request) { // Taking the client socket as a
+		private ClientThread(Socket request) { // Taking the client socket as a
 												// constructor enables the
 												// Listener class above to farm
 												// out the request quickly
@@ -163,39 +185,30 @@ public class WebServer {
 		public void run() {
 			boolean finish = false;
 			String path = "downloads";
+
 			try {
 
 				in = new ObjectInputStream(sock.getInputStream());
 				out = new ObjectOutputStream(sock.getOutputStream());
 
 				do {
-					
+
 					try {
 						System.out.println("Waiting for order.");
-						String command = (String)in.readObject(); // Deserialise the
+						Request command = (Request) in.readObject(); // Deserialise
+																		// the
 						// request
 						// into an Object
-						System.out.println(command);
-						if (command.contains("Requesting File List")){
-							FolderReader fr = new FolderReader("downloads");
-							List<String> file_list = fr.getList();
-							sendMessage(file_list);
-							
-						} else if(command.equals(null)){
+						if (command.getCommand().equals("Listing")) {
+							this.listing(command);
+						} else if (command.getCommand().equals("Connection")) {
+							this.connection(command);
+						} else if (command.getCommand().equals("File request")) {
+							this.requestFile(command);
+						} else if (command.getCommand().equals(null)) {
 							this.sock.close();
-						}else if(command.contains("Requesting Connection")){
-							// Write out a response back to the client. This process
-							// is
-							// called Serialization or Marshalling
-							String message = Thread.currentThread().getName() + ": Connection Successful.";
-							System.out.println(message);
-							sendMessage(message);
-						} else {
-							File requested_file = new File(path+"/"+command);
-							sendMessage(requested_file);
-							
 						}
-		
+
 					} catch (ClassNotFoundException classnot) {
 						System.err.println("Data received in unknown format");
 						System.err.println(classnot.getMessage());
@@ -203,17 +216,16 @@ public class WebServer {
 						finish = true;
 					}
 				} while (!finish);
-				System.out.println("Thread "+ Thread.currentThread().getName() + " Finished.");
-				
-			}catch(
+				System.out.println("Thread " + Thread.currentThread().getName() + " Finished.");
 
-		Exception e)
-		{
-			e.printStackTrace();
+			} catch (
+
+			Exception e) {
+				e.printStackTrace();
+			}
 		}
-	}
-	
-	void sendFile(File msg) {
+
+		private void sendMessage(Object msg) {
 			try {
 				out.writeObject(msg);
 				out.flush();
@@ -222,13 +234,56 @@ public class WebServer {
 			}
 		}
 
-	void sendMessage(Object msg) {
-		try {
-			out.writeObject(msg);
-			out.flush();
-		} catch (IOException ioException) {
-			ioException.printStackTrace();
+		private void listing(Request command) {
+			String path = "downloads";
+			try {
+				FolderReader fr = new FolderReader(path);
+				List<String> file_list = fr.getList();
+				command.setStatus("INFO");
+				logger.log(command);
+				sendMessage(file_list);
+			} catch (Exception e) {
+				command.setStatus("ERROR");
+				logger.log(command);
+			}
 		}
-	}
-}// End of inner class HTTPRequest
+
+		private void connection(Request command) {
+			String message = Thread.currentThread().getName() + ": Connection Successful.";
+			command.setStatus("INFO");
+			logger.log(command);
+			sendMessage(message);
+		}
+
+		private void requestFile(Request command) {
+			String path = "downloads";
+			FileInputStream fis;
+			BufferedInputStream bis = null;
+			try {
+				// send file
+				File myFile = new File(path + "/" + command.getFilename());
+				sendMessage((int) myFile.length());
+				byte[] mybytearray = new byte[(int) myFile.length()];
+				fis = new FileInputStream(myFile);
+				bis = new BufferedInputStream(fis);
+				bis.read(mybytearray, 0, mybytearray.length);
+				out.write(mybytearray, 0, mybytearray.length);
+				out.flush();
+				command.setStatus("INFO");
+				command.setCommand(command.getCommand() + " " + command.getFilename());
+			} catch (IOException e) {
+				e.printStackTrace();
+				command.setStatus("ERROR");
+			} finally {
+				logger.log(command);
+					try {
+						if (bis != null)
+							bis.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				
+			}
+		}
+	}// End of inner class HTTPRequest
 }// End of class WebServer

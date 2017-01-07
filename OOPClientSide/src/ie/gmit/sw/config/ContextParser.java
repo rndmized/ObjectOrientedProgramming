@@ -1,4 +1,4 @@
-package ie.gmit.sw.XMLParser;
+package ie.gmit.sw.config;
 
 import javax.xml.parsers.*;
 import org.w3c.dom.*;

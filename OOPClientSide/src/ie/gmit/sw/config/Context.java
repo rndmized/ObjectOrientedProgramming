@@ -1,4 +1,4 @@
-package ie.gmit.sw.XMLParser;
+package ie.gmit.sw.config;
 
 /* A context represents the entire scope of an application, i.e.
  * we can assign "global variables" to a context.

@@ -1,0 +1,4 @@
+[INFO]Connection requested by /127.0.0.1 at Sat Jan 07 22:52:40 CET 2017
+[INFO]Listing requested by /127.0.0.1 at Sat Jan 07 22:52:45 CET 2017
+[INFO]File request test2.txt requested by /127.0.0.1 at Sat Jan 07 22:52:55 CET 2017
+[INFO]File request test1.txt requested by /127.0.0.1 at Sat Jan 07 22:53:28 CET 2017
