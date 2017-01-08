@@ -36,8 +36,15 @@ public class FolderReader {
  * @return List of Strings containing file names and directories.
  */
 	public List<String> getList() {
+		/*
+		 * Create array list and get file array from folder contents.
+		 */
 		List<String> list = new ArrayList<>();
 		File[] listOfFiles = getFileArray();
+		/*
+		 * for each element in the folder, determine whether it is a file or a 
+		 * directory and add it to the list consequently.
+		 */
 		for (int i = 0; i < listOfFiles.length; i++) {
 			if (listOfFiles[i].isFile()) {
 				list.add("File " + listOfFiles[i].getName());

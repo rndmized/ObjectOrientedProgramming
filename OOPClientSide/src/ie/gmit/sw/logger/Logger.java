@@ -34,10 +34,16 @@ public class Logger implements Runnable {
 		while (keepRunning) {
 			Request req;
 			try {
+				/*
+				 * Take request from queue, if it is a poison request finish loop else...
+				 */
 				req = queue.take();
 				if (req instanceof PoisonRequest) {
 					keepRunning = false;
 				} else {
+					/*
+					 * open log file and append request into it.
+					 */
 					try {
 						fw = new FileWriter(new File("log.txt"), true);
 						System.out.println("LOGGING: " + req.toString());

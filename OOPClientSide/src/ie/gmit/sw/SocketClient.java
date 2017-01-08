@@ -47,12 +47,14 @@ public class SocketClient implements Runnable {
 	 * 
 	 */
 	public void run() {
-		System.out.println("Starting to run!");
 		finish = false;
 		stdin = new Scanner(System.in);
 		String threadName = Thread.currentThread().getName();
 		Socket socket = null;
 
+		/*
+		 * Display menu while finish != true
+		 */
 		do {
 			System.out.println("User " + threadName);
 			System.out.println("1. Connect to Server.");
@@ -67,7 +69,9 @@ public class SocketClient implements Runnable {
 			} catch (Exception e) {
 				stdin.nextLine();
 			}
-
+			/*
+			 * Determine user choice
+			 */
 			switch (choice) {
 			case 1:
 				socket = connect();
@@ -97,8 +101,7 @@ public class SocketClient implements Runnable {
 	 */
 	private Socket connect() {
 		// Connect to the server
-		try { // Attempt the following. If something goes wrong, the flow jumps
-				// down to catch()
+		try {
 			Socket sock = new Socket(ctx.getHost(), ctx.getPort()); // Connect
 																	// to the
 																	// server
@@ -116,8 +119,7 @@ public class SocketClient implements Runnable {
 			System.out.println(response);
 			return sock;
 
-		} catch (Exception e) { // Deal with the error here. A try/catch stops a
-								// programme crashing on error
+		} catch (Exception e) {
 			System.out.println("Error: " + e.getMessage());
 			return null;
 		} // End of try /catch
@@ -130,6 +132,7 @@ public class SocketClient implements Runnable {
 	 */
 	private void disconnect(Socket socket) {
 		try {
+			// If there is a connection close it
 			if (socket != null && socket.isConnected()) {
 				socket.close();
 			}
@@ -146,6 +149,7 @@ public class SocketClient implements Runnable {
 	 */
 	private void sendMessage(Object object) {
 		try {
+			// Serialise and send object
 			out.writeObject(object);
 			out.flush();
 		} catch (IOException ioException) {
@@ -166,13 +170,18 @@ public class SocketClient implements Runnable {
 		byte[] mybytearray = null;
 		FileOutputStream fos;
 		BufferedOutputStream bos = null;
-
+		/*
+		 * Take user input to download file, create a request and send it to
+		 * server
+		 */
 		System.out.println("Please enter file name: ");
 		String file_request = stdin.next();
 		Request request = new Request("File request", socket.getLocalAddress().toString(), new Date());
 		request.setFilename(file_request);
 		sendMessage(request);
-
+		/*
+		 * Deserialise size
+		 */
 		try {
 			size = (Integer) in.readObject();
 			mybytearray = new byte[size];
@@ -189,10 +198,8 @@ public class SocketClient implements Runnable {
 				bytesRead = in.read(mybytearray, 0, mybytearray.length);
 				current = bytesRead;
 			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			do {
@@ -210,9 +217,7 @@ public class SocketClient implements Runnable {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-
 		}
-
 	}
 
 	/**
@@ -222,20 +227,22 @@ public class SocketClient implements Runnable {
 	 *            The socket to make the request through.
 	 */
 	private void requestFileList(Socket socket) {
-
 		try {
-
+			/*
+			 * Create new Request for Listing and send it.
+			 */
 			Request request = new Request("Listing", socket.getLocalAddress().toString(), new Date());
 			sendMessage(request);
-			// Deserialise / unmarshal response from server
-			List response = (List) in.readObject();
+			// De-serialise / un-marshal response from server
+			List<String> response = (List<String>) in.readObject();
+			/*
+			 * For each element in the list print String.
+			 */
 			for (int i = 0; i < response.size(); i++) {
 				System.out.println(response.get(i));
-			} // Deserialise
-		} catch (Exception e) { // Deal with the error here. A try/catch stops a
-								// programme crashing on error
+			}
+		} catch (Exception e) {
 			System.out.println("Error: " + e.getMessage());
 		} // End of try /catch
-
 	}
 }// End of class
