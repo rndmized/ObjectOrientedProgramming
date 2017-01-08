@@ -33,8 +33,9 @@ The following options will be offered to a user:
 3. Download File
 4. Quit
 Type Option [1-4]>
-Typing 1: The client will establish a connection with the server, causing the server to spawn a thread for it (for every client).
-Typing 2: A list of available files to download will be sent from server and printed to screen.
-typing 3: A name file will prompt. The typed filename will be retreived from server (if such file exists) and downloaded in the download directory.
-Typing 4: The client will close the connection with the server if exists and will terminate the program.
+
+- Typing 1: The client will establish a connection with the server, causing the server to spawn a thread for it (for every client).
+- Typing 2: A list of available files to download will be sent from server and printed to screen.
+- Typing 3: A name file will prompt. The typed filename will be retreived from server (if such file exists) and downloaded in the download directory.
+- Typing 4: The client will close the connection with the server if exists and will terminate the program.
 
