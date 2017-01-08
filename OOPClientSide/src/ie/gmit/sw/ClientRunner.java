@@ -1,4 +1,4 @@
-package ie.gmit.sw.client;
+package ie.gmit.sw;
 
 import ie.gmit.sw.config.Context;
 import ie.gmit.sw.config.ContextParser;
@@ -10,7 +10,7 @@ public class ClientRunner {
 		Context ctx = new Context();
 		ContextParser cp = new ContextParser(ctx);
 		try {
-			cp.init();
+			cp.parse();
 		} catch (Throwable e) {
 			e.printStackTrace();
 		}

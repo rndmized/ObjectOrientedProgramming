@@ -2,16 +2,25 @@ package ie.gmit.sw.config;
 
 import javax.xml.parsers.*;
 import org.w3c.dom.*;
-
-public class ContextParser {
+/**
+ * This class parses a context file into a context object following the DOM.
+ * @author RnDMizeD
+ * @version 1.0
+ */
+public class ContextParser implements Parseator{
 	private Context ctx;
-
+/**
+ * Constructs a ContextParser.
+ * @param ctx Context where document will be parsed to
+ */
 	public ContextParser(Context ctx) {
 		super();
 		this.ctx = ctx;
 	}
-
-	public void init() throws Throwable {
+	/**
+	 * This method parses the values in a document to this context object.
+	 */
+	public void parse() throws Throwable {
 		/*
 		 * These three lines are part of JAXP (Java API for XML Processing) and
 		 * are designed to completely encapsulate how a DOM node tree in
@@ -100,11 +109,17 @@ public class ContextParser {
 			}
 		}
 	}
-
+/**
+ * This method returns current context instance.
+ * @return Context.
+ */
 	public Context getCtx() {
 		return ctx;
 	}
-
+/**
+ * This method sets current Context to parameter Context
+ * @param ctx context to be set as value for the current context.
+ */
 	public void setCtx(Context ctx) {
 		this.ctx = ctx;
 	}

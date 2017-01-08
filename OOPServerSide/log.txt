@@ -2,3 +2,17 @@
 [INFO]Listing requested by /127.0.0.1 at Sat Jan 07 22:52:45 CET 2017
 [INFO]File request test2.txt requested by /127.0.0.1 at Sat Jan 07 22:52:55 CET 2017
 [INFO]File request test1.txt requested by /127.0.0.1 at Sat Jan 07 22:53:28 CET 2017
+[INFO]Connection requested by /127.0.0.1 at Sat Jan 07 23:20:12 CET 2017
+[INFO]Listing requested by /127.0.0.1 at Sat Jan 07 23:20:19 CET 2017
+[INFO]File request test1.txt requested by /127.0.0.1 at Sat Jan 07 23:20:30 CET 2017
+[INFO]Connection requested by /127.0.0.1 at Sat Jan 07 23:20:52 CET 2017
+[INFO]File request test2.txt requested by /127.0.0.1 at Sat Jan 07 23:21:07 CET 2017
+[INFO]File request test1.txt requested by /127.0.0.1 at Sat Jan 07 23:21:11 CET 2017
+[INFO]Connection requested by /127.0.0.1 at Sat Jan 07 23:22:37 CET 2017
+[ERROR]File request requested by /127.0.0.1 at Sat Jan 07 23:22:47 CET 2017
+[INFO]Connection requested by /127.0.0.1 at Sun Jan 08 11:39:08 CET 2017
+[INFO]Listing requested by /127.0.0.1 at Sun Jan 08 11:39:10 CET 2017
+[ERROR]File request test6.txt requested by /127.0.0.1 at Sun Jan 08 11:39:21 CET 2017
+[INFO]File request test2.txt requested by /127.0.0.1 at Sun Jan 08 11:40:23 CET 2017
+[INFO]Connection requested by /127.0.0.1 at Sun Jan 08 12:23:31 CET 2017
+[INFO]Listing requested by /127.0.0.1 at Sun Jan 08 12:23:32 CET 2017
